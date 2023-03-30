@@ -7,10 +7,10 @@ This is an ecommerce site, where you can buy all sorts of stuff. The homepage sh
 - products are displayed in a grid.
 - give the user an option to sort the products in ascending order. Can sort by "title", "price" or "rating". The products list should be reloaded when a new sorting option is chosen.
 - each product has :
-- a "thumbnail" field. We should display the thumbnail to give the customer an impression of what they're buying.
-- a "title" field. So as the customer would know what the product is.
-- a "price" field. This should be formatted as dollars like `$1,351`.
-- a "date" field, which is the date the product was added to the catalog. Dates should be displayed in relative time (eg. "3 days ago") unless they are older than 1 week, in which case the full date should be displayed.
+  - a "thumbnail" field. We should display the thumbnail to give the customer an impression of what they're buying.
+  - a "title" field. So as the customer would know what the product is.
+  - a "price" field. This should be formatted as dollars like `$1,351`.
+  - a "date" field, which is the date the product was added to the catalog. Dates should be displayed in relative time (eg. "3 days ago") unless they are older than 1 week, in which case the full date should be displayed.
 - The product grid should automatically load more items as you scroll down.
 - display an animated "loading..." message while the user waits for the data to load.
 - Pre-emptively fetch the next batch of results in advance, making use of idle-time. Would only be displayed until the user has scrolled to the bottom of the product grid.
@@ -18,8 +18,8 @@ This is an ecommerce site, where you can buy all sorts of stuff. The homepage sh
 
 ### Ads features
 
-x - after every 20 products we need to insert an advertisement from one of our sponsors. Use the same markup as the advertisement in the header shown in `src/App.js`, but make sure the `?r` query param is randomly generated each time an ad is displayed.
-x - Ads should be randomly selected, but a user must never see the same ad twice in a row.
+- after every 20 products we need to insert an advertisement from one of our sponsors. Use the same markup as the advertisement in the header shown in `src/App.js`, but make sure the `?r` query param is randomly generated each time an ad is displayed.
+- Ads should be randomly selected, but a user must never see the same ad twice in a row.
 
 ## Products API
 
