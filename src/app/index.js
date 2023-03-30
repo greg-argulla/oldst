@@ -67,6 +67,9 @@ const App = () => {
     // check if I reached bottom of the page, if so, add the next products to display then set to next page to make another call
     if (windowOffset >= documentScrollHeight && !loading && !endOfCatalog) {
       setProducts(products.concat(productsGet));
+      if ((page - 1) % 2 === 0) {
+        showAd();
+      }
       fetchNextSetOfProducts();
     }
   };
@@ -76,58 +79,51 @@ const App = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   });
 
-  //Show ad every 20 products
-  useEffect(() => {
-    const showAd = () => {
-      let secondsToGo = 10;
+  const showAd = () => {
+    let secondsToGo = 10;
 
-      let adToPresent = Math.floor(Math.random() * 1000);
+    let adToPresent = Math.floor(Math.random() * 1000);
 
-      // Locate an ad that isn't the same with the previous shown ad
-      while (adToPresent === prevAd.current) {
-        adToPresent = Math.floor(Math.random() * 1000);
-      }
-      prevAd.current = adToPresent;
+    // Locate an ad that isn't the same with the previous shown ad
+    while (adToPresent === prevAd.current) {
+      adToPresent = Math.floor(Math.random() * 1000);
+    }
+    prevAd.current = adToPresent;
 
-      const ad = (
-        <img
-          className="ad"
-          src={`http://localhost:8000/ads/?r=${adToPresent}`}
-          alt="ad"
-        />
-      );
+    const ad = (
+      <img
+        className="ad"
+        src={`http://localhost:8000/ads/?r=${adToPresent}`}
+        alt="ad"
+      />
+    );
 
-      const instance = modal.info({
-        title: "But first, a word from our sponsor",
+    const instance = modal.info({
+      title: "But first, a word from our sponsor",
+      content: (
+        <div>
+          {ad} This ad will close after {secondsToGo} second
+        </div>
+      ),
+      okText: "close",
+    });
+
+    const timer = setInterval(() => {
+      secondsToGo -= 1;
+      instance.update({
         content: (
           <div>
             {ad} This ad will close after {secondsToGo} second
           </div>
         ),
-        okText: "close",
       });
+    }, 1000);
 
-      const timer = setInterval(() => {
-        secondsToGo -= 1;
-        instance.update({
-          content: (
-            <div>
-              {ad} This ad will close after {secondsToGo} second
-            </div>
-          ),
-        });
-      }, 1000);
-
-      setTimeout(() => {
-        clearInterval(timer);
-        instance.destroy();
-      }, secondsToGo * 1000);
-    };
-
-    if (page % 2 === 0 && page > 2) {
-      showAd();
-    }
-  }, [modal, page]);
+    setTimeout(() => {
+      clearInterval(timer);
+      instance.destroy();
+    }, secondsToGo * 1000);
+  };
 
   return (
     <div className="App">
@@ -160,11 +156,12 @@ const App = () => {
                     <img alt="thumbnail" src={item.thumbnail} height={300} />
                   }
                 >
+                  <Text strong>{formatCurrency(item.price)}</Text>
                   <div>
-                    <Text strong>{formatCurrency(item.price)}</Text>
                     <span>
-                      {item.rating}{" "}
+                      {` Rating: `}
                       <Rate disabled defaultValue={item.rating} allowHalf />
+                      {` (${item.rating}) `}
                     </span>
                   </div>
 
