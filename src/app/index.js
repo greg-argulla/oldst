@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
 import {
   Col,
@@ -32,33 +31,32 @@ const App = () => {
   const dispatch = useDispatch();
   const [sortValue, setSortValue] = useState("title");
   const [products, setProducts] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(2);
   const productsGet = useSelector(selectProducts);
   const loading = useSelector(selectPendingProducts);
   const endOfCatalog = useSelector(selectEndOfCatalog);
 
   const prevAd = useRef(0);
 
-  // Reset the page when sort value has changed
+  // Reset the page when sort value has changed and initialize first page
   useEffect(() => {
+    async function fetchData() {
+      const response = await dispatch(
+        getProducts({ sort: sortValue, page: 1 })
+      );
+      setProducts(response.payload);
+    }
+
     dispatch(resetProductList());
     setProducts([]);
-    setPage(1);
+    setPage(2);
+    fetchData();
   }, [dispatch, sortValue]);
 
-  // Get products if sort value or page has changed
+  // Get next set of products if page has changed
   useEffect(() => {
-    if (!loading) {
-      dispatch(getProducts({ sort: sortValue, page: page }));
-    }
-  }, [dispatch, sortValue, page]);
-
-  // If products doesn't have any items yet, add api result right away
-  useEffect(() => {
-    if (!products.length) {
-      setProducts(products.concat(productsGet));
-    }
-  }, [productsGet]);
+    dispatch(getProducts({ sort: sortValue, page: page }));
+  }, [dispatch, page, sortValue]);
 
   const handleScroll = () => {
     const documentScrollHeight = document.body.scrollHeight - 5;
@@ -77,58 +75,58 @@ const App = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   });
 
-  const showAd = () => {
-    let secondsToGo = 10;
+  //Show ad every 20 products
+  useEffect(() => {
+    const showAd = () => {
+      let secondsToGo = 10;
 
-    let adToPresent = Math.floor(Math.random() * 1000);
+      let adToPresent = Math.floor(Math.random() * 1000);
 
-    // Locate an ad that isn't the same with the previous shown ad
-    while (adToPresent === prevAd.current) {
-      adToPresent = Math.floor(Math.random() * 1000);
-    }
-    prevAd.current = adToPresent;
+      // Locate an ad that isn't the same with the previous shown ad
+      while (adToPresent === prevAd.current) {
+        adToPresent = Math.floor(Math.random() * 1000);
+      }
+      prevAd.current = adToPresent;
 
-    const ad = (
-      <img
-        className="ad"
-        src={`http://localhost:8000/ads/?r=${adToPresent}`}
-        alt="ad"
-      />
-    );
+      const ad = (
+        <img
+          className="ad"
+          src={`http://localhost:8000/ads/?r=${adToPresent}`}
+          alt="ad"
+        />
+      );
 
-    const instance = modal.info({
-      title: "But first, a word from our sponsor",
-      content: (
-        <div>
-          {ad} This ad will close after {secondsToGo} second
-        </div>
-      ),
-      okText: "close",
-    });
-
-    const timer = setInterval(() => {
-      secondsToGo -= 1;
-      instance.update({
+      const instance = modal.info({
+        title: "But first, a word from our sponsor",
         content: (
           <div>
             {ad} This ad will close after {secondsToGo} second
           </div>
         ),
+        okText: "close",
       });
-    }, 1000);
 
-    setTimeout(() => {
-      clearInterval(timer);
-      instance.destroy();
-    }, secondsToGo * 1000);
-  };
+      const timer = setInterval(() => {
+        secondsToGo -= 1;
+        instance.update({
+          content: (
+            <div>
+              {ad} This ad will close after {secondsToGo} second
+            </div>
+          ),
+        });
+      }, 1000);
 
-  //Show add every 20 products
-  useEffect(() => {
-    if ((page - 1) % 2 === 0 && page !== 1) {
+      setTimeout(() => {
+        clearInterval(timer);
+        instance.destroy();
+      }, secondsToGo * 1000);
+    };
+
+    if (page % 2 === 0 && page > 2) {
       showAd();
     }
-  }, [page]);
+  }, [modal, page]);
 
   return (
     <div className="App">
@@ -139,6 +137,7 @@ const App = () => {
             <Text strong>Sort By: </Text>
             <Radio.Group
               value={sortValue}
+              disabled={loading}
               onChange={(event) => {
                 setSortValue(event.target.value);
               }}
@@ -155,29 +154,32 @@ const App = () => {
                 <Card
                   title={item.title}
                   style={{ width: "100%", height: "100%" }}
+                  extra={formatRelativeTime(item.date)}
                   cover={
                     <img alt="thumbnail" src={item.thumbnail} height={300} />
                   }
                 >
-                  <p>
+                  <div>
                     <Text strong>{formatCurrency(item.price)}</Text>
-                  </p>
-                  <span>
-                    {item.rating}{" "}
-                    <Rate disabled defaultValue={item.rating} allowHalf />
-                  </span>
-                  <p>{formatRelativeTime(item.date)}</p>
+                    <span>
+                      {item.rating}{" "}
+                      <Rate disabled defaultValue={item.rating} allowHalf />
+                    </span>
+                  </div>
+
                   <p>{item.description}</p>
                 </Card>
               </Col>
             ))}
             <div style={{ textAlign: "center", width: "100%" }}>
-              {loading && (
+              {loading || products.length === 0 ? (
                 <Spin
                   tip="Loading"
                   size="large"
                   style={{ alignItems: "center" }}
                 />
+              ) : (
+                ""
               )}
               {endOfCatalog && !loading && (
                 <React.Fragment>
