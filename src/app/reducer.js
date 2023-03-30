@@ -18,7 +18,7 @@ export const getProducts = createAsyncThunk(
 
 const initialState = {
   productList: [],
-  pendingProducts: false,
+  pendingProductCalls: 0,
   endOfCatalog: false,
 };
 
@@ -35,16 +35,16 @@ export const slice = createSlice({
     builder
       .addCase(getProducts.fulfilled, (state, { payload }) => {
         state.productList = payload;
-        state.pendingProducts = false;
+        state.pendingProductCalls--;
         if (payload.length === 0) {
           state.endOfCatalog = true;
         }
       })
       .addCase(getProducts.pending, (state) => {
-        state.pendingProducts = true;
+        state.pendingProductCalls++;
       })
       .addCase(getProducts.rejected, (state) => {
-        state.pendingProducts = false;
+        state.pendingProductCalls--;
       });
   },
 });
@@ -53,6 +53,6 @@ export const resetProductList = slice.actions.reset;
 
 export const selectProducts = (state) => state.productList;
 export const selectEndOfCatalog = (state) => state.endOfCatalog;
-export const selectPendingProducts = (state) => state.pendingProducts;
+export const selectPendingProducts = (state) => state.pendingProductCalls;
 
 export default slice.reducer;

@@ -40,23 +40,25 @@ const App = () => {
 
   // Reset the page when sort value has changed and initialize first page
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
+      dispatch(resetProductList());
+      setProducts([]);
       const response = await dispatch(
         getProducts({ sort: sortValue, page: 1 })
       );
       setProducts(response.payload);
-    }
+      dispatch(getProducts({ sort: sortValue, page: 2 }));
+      setPage(2);
+    };
 
-    dispatch(resetProductList());
-    setProducts([]);
-    setPage(2);
     fetchData();
   }, [dispatch, sortValue]);
 
-  // Get next set of products if page has changed
-  useEffect(() => {
-    dispatch(getProducts({ sort: sortValue, page: page }));
-  }, [dispatch, page, sortValue]);
+  const fetchNextSetOfProducts = async () => {
+    const nextPage = page + 1;
+    await dispatch(getProducts({ sort: sortValue, page: nextPage }));
+    setPage(nextPage);
+  };
 
   const handleScroll = () => {
     const documentScrollHeight = document.body.scrollHeight - 5;
@@ -64,9 +66,8 @@ const App = () => {
 
     // check if I reached bottom of the page, if so, add the next products to display then set to next page to make another call
     if (windowOffset >= documentScrollHeight && !loading && !endOfCatalog) {
-      const nextPage = page + 1;
       setProducts(products.concat(productsGet));
-      setPage(nextPage);
+      fetchNextSetOfProducts();
     }
   };
 
