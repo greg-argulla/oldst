@@ -35,7 +35,6 @@ const App = () => {
   const productsGet = useSelector(selectProducts);
   const loading = useSelector(selectPendingProducts);
   const endOfCatalog = useSelector(selectEndOfCatalog);
-
   const prevAd = useRef(0);
 
   // Reset the page when sort value has changed and initialize first page
@@ -56,7 +55,7 @@ const App = () => {
 
   const fetchNextSetOfProducts = async () => {
     const nextPage = page + 1;
-    await dispatch(getProducts({ sort: sortValue, page: nextPage }));
+    dispatch(getProducts({ sort: sortValue, page: nextPage }));
     setPage(nextPage);
   };
 
